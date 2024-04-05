@@ -128,3 +128,4 @@ dist
 
 # TS output dir
 output
+package-lock.json

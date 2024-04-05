@@ -6,3 +6,17 @@ GET http://localhost:3000/user
 ###
 
 GET http://localhost:3000/user/123
+
+
+### Auth
+
+POST http://localhost:3000/auth/login
+
+###
+POST http://localhost:3000/auth/register
+
+###
+POST http://localhost:3000/auth/logout
+
+###
+POST http://localhost:3000/auth/test
