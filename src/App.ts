@@ -1,7 +1,6 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import bodyParser from "body-parser";
 
 import userRouter from "./routes/user_route";
 import authRouter from "./routes/auth_route";
@@ -21,8 +20,8 @@ const initApp = async (): Promise<Express> => {
     db.once("open", () => {
       console.log("Database connected");
 
-      app.use(bodyParser.json());
-      app.use(bodyParser.urlencoded({ extended: true }));
+      app.use(express.json());
+      app.use(express.urlencoded({ extended: true }));
       app.use("/user", userRouter);
       app.use("/auth", authRouter);
 
