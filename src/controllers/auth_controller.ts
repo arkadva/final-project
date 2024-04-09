@@ -32,8 +32,21 @@ class AuthController {
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
       );
+
+      const refreshToken = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.REFRESH_TOKEN_SECRET
+      );
+
+      if (user.tokens == null) {
+        user.tokens = [refreshToken]
+      } else {
+        user.tokens.push(refreshToken);
+      }
+
+      await user.save();
       
-      res.status(200).send({ message: "User logged in successfully.", token });
+      res.status(200).send({ message: "User logged in successfully.", token, refreshToken });
     } catch (err) {
       return sendError(res, "Login error.");
     }
@@ -41,8 +54,6 @@ class AuthController {
 
   async register(req: Request, res: Response) {
     const { email, password, name } = req.body;
-
-    console.log(req.body);
     
     if (!email || !password || !name) {
       return sendError(res, "All fields are required.");
@@ -71,6 +82,51 @@ class AuthController {
 
   async logout(req: Request, res: Response) {
     sendError(res, "Yet to be implemented.");
+  }
+
+  async refreshToken(req: Request, res: Response) {
+    const authHeader = req.headers['authorization'];
+    const refreshToken = authHeader?.split(' ')[1];
+
+    if (!refreshToken) {
+        return res.status(401).send("Missing token");
+    }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!, async (err, decoded) => {
+        if (err) return res.status(403).send("Invalid token");
+        console.log("yes");
+        const userId = (decoded as any)._id;
+
+        try {
+            const user = await UserModel.findById(userId);
+            if (!user || !user.tokens || !user.tokens.includes(refreshToken)) {
+                console.log(user);
+                return res.status(403).send("Invalid token");
+            }
+
+            const newAccessToken = jwt.sign(
+              { userId: user._id, email: user.email },
+              process.env.ACCESS_TOKEN_SECRET,
+              { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
+            );
+      
+            const newRefreshToken = jwt.sign(
+              { userId: user._id, email: user.email },
+              process.env.REFRESH_TOKEN_SECRET
+            );
+
+            user.tokens = user.tokens.filter(token => token !== refreshToken);
+            user.tokens.push(newRefreshToken);
+            await user.save();
+
+            return res.status(200).send({
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken
+            });
+        } catch (error) {
+            return res.status(400).send(error instanceof Error ? error.message : "An error occurred");
+        }
+    });
   }
 }
 

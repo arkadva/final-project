@@ -8,4 +8,5 @@ router.post("/login", userController.login.bind(userController));
 
 router.post("/logout", userController.logout.bind(userController));
 
+router.post("/refreshToken", userController.refreshToken.bind(userController))
 export default router;
