@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 
 import userRouter from "./routes/user_route";
 import authRouter from "./routes/auth_route";
+import testRouter from "./routes/test_route";
 
 dotenv.config();
 const app = express();
@@ -24,6 +25,7 @@ const initApp = async (): Promise<Express> => {
       app.use(express.urlencoded({ extended: true }));
       app.use("/user", userRouter);
       app.use("/auth", authRouter);
+      app.use("/post", testRouter);
 
       resolve(app);
     });
