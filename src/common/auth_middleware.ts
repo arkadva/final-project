@@ -15,7 +15,7 @@ const authenticate = (req: RequestWithUser, res: Response, next: NextFunction) =
             if (err) {
                 return res.sendStatus(403);
             }
-
+            
             req.user = user;
             next();
         });

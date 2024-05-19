@@ -21,6 +21,7 @@ class UserController {
 
   async getById(req: Request, res: Response) {
     try {
+      console.log(req.params);
       const user = await UserModel.findById(req.params.id);
       if (!user) {
         return res.status(404).send("User not found");

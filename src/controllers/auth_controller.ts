@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
 import UserModel from '../models/user_model';
-
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import path from 'path';
+
+interface RequestWithFile extends Request {
+  file?: Express.Multer.File;
+}
 
 function sendError(res: Response, msg: string) {
   return res.status(400).send({ error: msg });
@@ -39,21 +43,25 @@ class AuthController {
       );
 
       if (user.tokens == null) {
-        user.tokens = [refreshToken]
+        user.tokens = [refreshToken];
       } else {
         user.tokens.push(refreshToken);
       }
 
       await user.save();
-      
+
       res.status(200).send({ message: "User logged in successfully.", token, refreshToken });
     } catch (err) {
       return sendError(res, "Login error.");
     }
   }
 
-  async register(req: Request, res: Response) {
+  async register(req: RequestWithFile, res: Response) {
+    console.log(req.body);
     const { email, password, name } = req.body;
+    const img = req.file ? req.file.path : null;
+
+    console.log(img);
     
     if (!email || !password || !name) {
       return sendError(res, "All fields are required.");
@@ -71,6 +79,7 @@ class AuthController {
         name,
         email,
         password: hashedPassword,
+        profileImg: img,
       });
 
       await user.save();
@@ -89,43 +98,42 @@ class AuthController {
     const refreshToken = authHeader?.split(' ')[1];
 
     if (!refreshToken) {
-        return res.status(401).send("Missing token");
+      return res.status(401).send("Missing token");
     }
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!, async (err, decoded) => {
-        if (err) return res.status(403).send("Invalid token");
-        console.log("yes");
-        const userId = (decoded as any)._id;
+      if (err) return res.status(403).send("Invalid token");
 
-        try {
-            const user = await UserModel.findById(userId);
-            if (!user || !user.tokens || !user.tokens.includes(refreshToken)) {
-                console.log(user);
-                return res.status(403).send("Invalid token");
-            }
+      const userId = (decoded as any).userId;
 
-            const newAccessToken = jwt.sign(
-              { userId: user._id, email: user.email },
-              process.env.ACCESS_TOKEN_SECRET,
-              { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
-            );
-      
-            const newRefreshToken = jwt.sign(
-              { userId: user._id, email: user.email },
-              process.env.REFRESH_TOKEN_SECRET
-            );
-
-            user.tokens = user.tokens.filter(token => token !== refreshToken);
-            user.tokens.push(newRefreshToken);
-            await user.save();
-
-            return res.status(200).send({
-              accessToken: newAccessToken,
-              refreshToken: newRefreshToken
-            });
-        } catch (error) {
-            return res.status(400).send(error instanceof Error ? error.message : "An error occurred");
+      try {
+        const user = await UserModel.findById(userId);
+        if (!user || !user.tokens || !user.tokens.includes(refreshToken)) {
+          return res.status(403).send("Invalid token");
         }
+
+        const newAccessToken = jwt.sign(
+          { userId: user._id, email: user.email },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
+        );
+
+        const newRefreshToken = jwt.sign(
+          { userId: user._id, email: user.email },
+          process.env.REFRESH_TOKEN_SECRET
+        );
+
+        user.tokens = user.tokens.filter(token => token !== refreshToken);
+        user.tokens.push(newRefreshToken);
+        await user.save();
+
+        return res.status(200).send({
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken
+        });
+      } catch (error) {
+        return res.status(400).send(error instanceof Error ? error.message : "An error occurred");
+      }
     });
   }
 }
