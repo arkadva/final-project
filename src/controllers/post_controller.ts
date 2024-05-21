@@ -32,14 +32,17 @@ class PostController {
       const owner = req.user?.userId;
       const { id } = req.params;
 
-      if (!text) {
-        return res.status(400).send({ message: 'Text is required.' });
+      if (!text && !img) {
+        return res.status(400).send({ message: 'Either text or image must be provided.' });
       }
 
+      const updateFields: any = {};
+      if (text) updateFields.text = text;
+      if (img) updateFields.img = img;
 
       const updatedPost = await Post.findOneAndUpdate(
         { _id: id, owner },
-        { text, img },
+        updateFields,
         { new: true }
       );
 
@@ -59,6 +62,20 @@ class PostController {
       res.status(200).send(posts);
     } catch (error) {
       console.error("Error fetching posts:", error);
+      res.status(400).send(error.message);
+    }
+  }
+
+  async getById(req: RequestWithUser, res: Response) {
+    try {
+      const { userId } = req.params;
+      console.log(req.params);
+
+      const posts = await Post.find({ owner: userId });
+
+      res.status(200).send(posts);
+    } catch (error) {
+      console.error("Error fetching posts by user ID:", error);
       res.status(400).send(error.message);
     }
   }

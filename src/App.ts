@@ -32,6 +32,13 @@ const initApp = async (): Promise<Express> => {
       app.use("/auth", authRouter);
       app.use("/posts", postRouter);
 
+      if (process.env.NODE_ENV === 'development') {
+        import('./common/swagger').then(({ setupSwagger }) => {
+          setupSwagger(app);
+          console.log("Swagger setup in development mode");
+        }).catch(err => console.error("Error setting up Swagger", err));
+      }
+
       resolve(app);
     });
 
