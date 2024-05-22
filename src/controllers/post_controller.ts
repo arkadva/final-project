@@ -79,6 +79,23 @@ class PostController {
       res.status(400).send(error.message);
     }
   }
+
+  async delete(req: RequestWithUser, res: Response) {
+    try {
+      const { id } = req.params;
+      const owner = req.user?.userId;
+      
+      const deletedPost = await Post.findOneAndDelete({ _id: id, owner });
+
+      if (!deletedPost) {
+        return res.status(404).send({ message: 'Post not found or you are not the owner.' });
+      }
+
+      res.status(200).send({ message: 'Post deleted successfully.' });
+    } catch (error) {
+      res.status(500).send({ message: 'An error occurred while deleting the post.' });
+    }
+  }
 }
 
 export default new PostController();

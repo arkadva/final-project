@@ -120,4 +120,29 @@ router.get('/', authMiddleware, PostController.get);
  */
 router.get('/by/:userId', authMiddleware, PostController.getById);
 
+/**
+ * @swagger
+ * /posts/{id}:
+ *   delete:
+ *     summary: Delete a post by its ID
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the post to delete
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Post deleted successfully
+ *       404:
+ *         description: Post not found or you are not the owner
+ *       500:
+ *         description: An error occurred while deleting the post
+ */
+router.delete('/:id', authMiddleware, PostController.delete);
+
 export default router;

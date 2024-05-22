@@ -1,7 +1,14 @@
-import express from "express";
-const router = express.Router();
-import upload from '../common/multer';
+import express, { Request, Response, NextFunction } from 'express';
+import passport from 'passport';
 import userController from "../controllers/auth_controller";
+import upload from '../common/multer';
+
+const router = express.Router();
+
+interface RequestWithUser extends Request {
+  user?: any;
+  login: (user: any, callback: (err?: any) => void) => void;
+}
 
 /**
  * @swagger
@@ -22,27 +29,22 @@ import userController from "../controllers/auth_controller";
  *       - in: formData
  *         name: profileImg
  *         type: file
- *         description: The profile image of the user
+ *         description: Profile image of the user
  *       - in: formData
- *         name: email
+ *         name: username
  *         type: string
  *         required: true
- *         description: The email of the user
+ *         description: Username of the user
  *       - in: formData
  *         name: password
  *         type: string
  *         required: true
- *         description: The password of the user
- *       - in: formData
- *         name: name
- *         type: string
- *         required: true
- *         description: The name of the user
+ *         description: Password of the user
  *     responses:
  *       200:
  *         description: User registered successfully
  *       400:
- *         description: Error occurred during registration
+ *         description: Bad request
  */
 router.post("/register", upload.single('profileImg'), userController.register.bind(userController));
 
@@ -59,19 +61,19 @@ router.post("/register", upload.single('profileImg'), userController.register.bi
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               username:
  *                 type: string
- *                 description: The email of the user
- *                 example: user@example.com
+ *                 description: Username of the user
+ *                 example: "user1"
  *               password:
  *                 type: string
- *                 description: The password of the user
- *                 example: password123
+ *                 description: Password of the user
+ *                 example: "password123"
  *     responses:
  *       200:
  *         description: User logged in successfully
- *       400:
- *         description: Invalid credentials
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/login", userController.login.bind(userController));
 
@@ -84,8 +86,6 @@ router.post("/login", userController.login.bind(userController));
  *     responses:
  *       200:
  *         description: User logged out successfully
- *       400:
- *         description: Error occurred during logout
  */
 router.post("/logout", userController.logout.bind(userController));
 
@@ -93,13 +93,13 @@ router.post("/logout", userController.logout.bind(userController));
  * @swagger
  * /auth/refreshToken:
  *   post:
- *     summary: Refresh user token
+ *     summary: Refresh user authentication token
  *     tags: [Auth]
  *     responses:
  *       200:
  *         description: Token refreshed successfully
- *       400:
- *         description: Missing or invalid token
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/refreshToken", userController.refreshToken.bind(userController));
 

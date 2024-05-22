@@ -1,6 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Express } from "express";
 import path from 'path';
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
 
@@ -8,7 +10,6 @@ import userRouter from "./routes/user_route";
 import authRouter from "./routes/auth_route";
 import postRouter from "./routes/post_route";
 
-dotenv.config();
 const app = express();
 
 const initApp = async (): Promise<Express> => {
@@ -28,6 +29,7 @@ const initApp = async (): Promise<Express> => {
       app.use(express.json());
       app.use(express.urlencoded({ extended: true }));
       app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
       app.use("/user", userRouter);
       app.use("/auth", authRouter);
       app.use("/posts", postRouter);

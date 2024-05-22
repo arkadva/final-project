@@ -13,6 +13,21 @@ function sendError(res: Response, msg: string) {
 }
 
 class AuthController {
+  generateToken(userId: string, email: string) {
+    return jwt.sign(
+      { userId, email },
+      process.env.ACCESS_TOKEN_SECRET!,
+      { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
+    );
+  }
+
+  generateRefreshToken(userId: string, email: string) {
+    return jwt.sign(
+      { userId, email },
+      process.env.REFRESH_TOKEN_SECRET!
+    );
+  }
+
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
 
@@ -26,23 +41,15 @@ class AuthController {
         return sendError(res, "Invalid credentials.");
       }
 
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = await bcrypt.compare(password, user.password!);
       if (!isMatch) {
         return sendError(res, "Invalid credentials.");
       }
 
-      const token = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
-      );
+      const token = this.generateToken(user._id, user.email);
+      const refreshToken = this.generateRefreshToken(user._id, user.email);
 
-      const refreshToken = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.REFRESH_TOKEN_SECRET
-      );
-
-      if (user.tokens == null) {
+      if (!user.tokens) {
         user.tokens = [refreshToken];
       } else {
         user.tokens.push(refreshToken);
@@ -112,16 +119,8 @@ class AuthController {
           return res.status(403).send("Invalid token");
         }
 
-        const newAccessToken = jwt.sign(
-          { userId: user._id, email: user.email },
-          process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
-        );
-
-        const newRefreshToken = jwt.sign(
-          { userId: user._id, email: user.email },
-          process.env.REFRESH_TOKEN_SECRET
-        );
+        const newAccessToken = this.generateToken(user._id, user.email);
+        const newRefreshToken = this.generateRefreshToken(user._id, user.email);
 
         user.tokens = user.tokens.filter(token => token !== refreshToken);
         user.tokens.push(newRefreshToken);

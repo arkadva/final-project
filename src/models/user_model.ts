@@ -1,14 +1,20 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
+  googleId?: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   profileImg?: string;
   tokens?: string[];
 }
 
 const userSchema = new Schema<IUser>({
+  googleId: {
+    type: String,
+    required: false,
+    unique: true,
+  },
   name: {
     type: String,
     required: true,
@@ -20,11 +26,11 @@ const userSchema = new Schema<IUser>({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
   },
   profileImg: {
     type: String,
-    required: true,
+    required: false,
   },
   tokens: {
     type: [String],
