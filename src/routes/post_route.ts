@@ -77,7 +77,7 @@ router.post('/', authMiddleware, upload.single('img'), PostController.create);
  *       500:
  *         description: An error occurred while updating the post
  */
-router.put('/:id', authMiddleware, upload.single('img'), PostController.edit);
+router.put('/:id', authMiddleware, PostController.edit);
 
 /**
  * @swagger

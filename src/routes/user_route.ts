@@ -1,6 +1,8 @@
 import express from "express";
 const router = express.Router();
 import userController from "../controllers/user_controller";
+import authMiddleware from '../common/auth_middleware';
+import upload from '../common/multer';
 
 /**
  * @swagger
@@ -82,5 +84,7 @@ router.get("/:id", userController.getById.bind(userController));
  *         description: Error occurred while creating user
  */
 router.post("/", userController.post.bind(userController));
+
+router.put('/:id', authMiddleware, upload.single('img'), userController.edit.bind(userController));
 
 export default router;

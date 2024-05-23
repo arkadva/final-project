@@ -13,17 +13,17 @@ function sendError(res: Response, msg: string) {
 }
 
 class AuthController {
-  generateToken(userId: string, email: string) {
+  generateToken(userId: string) {
     return jwt.sign(
-      { userId, email },
+      { userId },
       process.env.ACCESS_TOKEN_SECRET!,
       { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
     );
   }
 
-  generateRefreshToken(userId: string, email: string) {
+  generateRefreshToken(userId: string) {
     return jwt.sign(
-      { userId, email },
+      { userId },
       process.env.REFRESH_TOKEN_SECRET!
     );
   }
@@ -46,8 +46,8 @@ class AuthController {
         return sendError(res, "Invalid credentials.");
       }
 
-      const token = this.generateToken(user._id, user.email);
-      const refreshToken = this.generateRefreshToken(user._id, user.email);
+      const token = this.generateToken(user._id);
+      const refreshToken = this.generateRefreshToken(user._id);
 
       if (!user.tokens) {
         user.tokens = [refreshToken];
@@ -119,8 +119,8 @@ class AuthController {
           return res.status(403).send("Invalid token");
         }
 
-        const newAccessToken = this.generateToken(user._id, user.email);
-        const newRefreshToken = this.generateRefreshToken(user._id, user.email);
+        const newAccessToken = this.generateToken(user._id);
+        const newRefreshToken = this.generateRefreshToken(user._id);
 
         user.tokens = user.tokens.filter(token => token !== refreshToken);
         user.tokens.push(newRefreshToken);

@@ -42,6 +42,46 @@ class UserController {
       res.status(400).send(error.message);
     }
   }
+
+  async edit(req: Request, res: Response) {
+    try {
+      const { name, email, profileImg } = req.body.user;
+      const { id } = req.params;
+
+      console.log(name, email, profileImg);
+      
+      if (!name && !email && !profileImg) {
+        return res.status(400).send({ message: 'At least one of name, email, or image must be provided.' });
+      }
+
+      if (email) {
+        const existingUser = await UserModel.findOne({ email });
+        if (existingUser && existingUser._id.toString() !== id) {
+          return res.status(400).send({ message: 'Email already in use by another user.' });
+        }
+      }
+
+      const updateFields: any = {};
+      if (name) updateFields.name = name;
+      if (email) updateFields.email = email;
+      if (profileImg) updateFields.image = profileImg;
+
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        id,
+        updateFields,
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).send({ message: 'User not found.' });
+      }
+
+      res.status(200).send(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).send({ message: 'An error occurred while updating the user.' });
+    }
+  }
 }
 
 export default new UserController();

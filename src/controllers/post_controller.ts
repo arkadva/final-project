@@ -28,17 +28,16 @@ class PostController {
   async edit(req: RequestWithUser, res: Response) {
     try {
       const { text } = req.body;
-      const img = req.file?.path;
       const owner = req.user?.userId;
       const { id } = req.params;
 
-      if (!text && !img) {
-        return res.status(400).send({ message: 'Either text or image must be provided.' });
+
+      if (!text) {
+        return res.status(400).send({ message: 'Text must be provided.' });
       }
 
       const updateFields: any = {};
       if (text) updateFields.text = text;
-      if (img) updateFields.img = img;
 
       const updatedPost = await Post.findOneAndUpdate(
         { _id: id, owner },
