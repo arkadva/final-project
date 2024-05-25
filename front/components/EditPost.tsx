@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, Image, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, Image, Alert, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { apiController as api } from '../api/api_controller';
 import { Post } from '../models/Post';
 import axios from 'axios';
@@ -42,13 +42,16 @@ const EditPost = ({ route, navigation }: { route: any, navigation: any }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Edit Post</Text>
-      <TextInput 
-        value={text} 
-        onChangeText={setText} 
-        placeholder="Post text" 
-        style={styles.textInput} 
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.header}>Edit Post</Text>
+      <TextInput
+        value={text}
+        onChangeText={setText}
+        placeholder="Post text"
+        style={styles.textInput}
+        multiline
+        numberOfLines={4}
+        textAlignVertical="top"
       />
       {image && <Image source={{ uri: formatImagePath(image) }} style={styles.image} />}
       {loading ? (
@@ -56,16 +59,21 @@ const EditPost = ({ route, navigation }: { route: any, navigation: any }) => {
       ) : (
         <Button title="Save" onPress={handleSave} />
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
   textInput: {
     width: '100%',
@@ -73,6 +81,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     marginBottom: 16,
+    borderRadius: 4,
+    textAlignVertical: 'top',
   },
   image: {
     width: 100,

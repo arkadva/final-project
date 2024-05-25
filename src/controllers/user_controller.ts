@@ -48,7 +48,7 @@ class UserController {
       const { name, email, profileImg } = req.body.user;
       const { id } = req.params;
 
-      console.log(name, email, profileImg);
+      console.log("TEST", name, email, profileImg);
       
       if (!name && !email && !profileImg) {
         return res.status(400).send({ message: 'At least one of name, email, or image must be provided.' });

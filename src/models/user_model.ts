@@ -10,11 +10,6 @@ export interface IUser extends Document {
 }
 
 const userSchema = new Schema<IUser>({
-  googleId: {
-    type: String,
-    required: false,
-    unique: true,
-  },
   name: {
     type: String,
     required: true,

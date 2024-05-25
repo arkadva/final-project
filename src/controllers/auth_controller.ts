@@ -49,6 +49,7 @@ class AuthController {
       const token = this.generateToken(user._id);
       const refreshToken = this.generateRefreshToken(user._id);
 
+
       if (!user.tokens) {
         user.tokens = [refreshToken];
       } else {
@@ -64,11 +65,8 @@ class AuthController {
   }
 
   async register(req: RequestWithFile, res: Response) {
-    console.log(req.body);
     const { email, password, name } = req.body;
     const img = req.file ? req.file.path : null;
-
-    console.log(img);
     
     if (!email || !password || !name) {
       return sendError(res, "All fields are required.");
@@ -94,10 +92,6 @@ class AuthController {
     } catch (err) {
       return sendError(res, err.message);
     }
-  }
-
-  async logout(req: Request, res: Response) {
-    sendError(res, "Yet to be implemented.");
   }
 
   async refreshToken(req: Request, res: Response) {

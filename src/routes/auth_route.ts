@@ -79,18 +79,6 @@ router.post("/login", userController.login.bind(userController));
 
 /**
  * @swagger
- * /auth/logout:
- *   post:
- *     summary: Logout a user
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: User logged out successfully
- */
-router.post("/logout", userController.logout.bind(userController));
-
-/**
- * @swagger
  * /auth/refreshToken:
  *   post:
  *     summary: Refresh user authentication token
