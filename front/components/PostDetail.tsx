@@ -15,6 +15,7 @@ const PostDetail = ({ route, navigation }: { route: any, navigation: any }) => {
       <PostItem
         post={post}
         userId={loggedInUserId}
+        onEditPress={() => navigation.navigate('EditPost', { post })}
         onDeletePress={handleDeletePress}
         displayMode={true}
       />

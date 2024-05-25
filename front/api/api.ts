@@ -2,9 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { User } from '../models/User';
 import { Post } from '../models/Post';
+import { jwtDecode } from 'jwt-decode';
+
+let isRefreshToken = false;
 
 const apiClient = axios.create({
-  baseURL: 'http://10.0.2.2:3000',
+  baseURL: 'http://10.0.2.2:3001',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,8 +16,26 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('jwtToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+
+    if (!isRefreshToken && token) {
+      const isTokenExpired = isJwtExpired(token);
+      if (isTokenExpired && refreshToken) {
+        const newTokens = await refreshJwtToken(refreshToken);
+        isRefreshToken = false;
+
+        if (newTokens) {
+          const { jwtToken, newRefreshToken } = newTokens;
+
+          console.log(jwtToken, newRefreshToken);
+
+          await AsyncStorage.setItem('jwtToken', jwtToken);
+          await AsyncStorage.setItem('refreshToken', newRefreshToken);
+          config.headers.Authorization = `Bearer ${jwtToken}`;
+        }
+      } else {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -22,6 +43,40 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+const isJwtExpired = (token: string): boolean => {
+  try {
+    const { exp } = jwtDecode<{ exp: number }>(token);
+    if (exp < Date.now() / 1000) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error decoding JWT token:', error);
+    return true;
+  }
+};
+
+const refreshJwtToken = async (refreshToken: string): Promise<{ jwtToken: string, newRefreshToken: string } | null> => {
+  try {
+    isRefreshToken = true;
+    const response = await apiClient.post('/auth/refreshToken', {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${refreshToken}`,
+      },
+    });
+
+    return {
+      jwtToken: response.data.accessToken,
+      newRefreshToken: response.data.refreshToken
+    };
+  } catch (error) {
+    isRefreshToken = false;
+    console.error('Refresh Token Error:', error);
+    return null;
+  }
+};
 
 export const api = {
   googleLogin: async (idToken: string) => {
@@ -72,9 +127,11 @@ export const api = {
   },
   refreshToken: async (user: Partial<User>) => {
     try {
+      isRefreshToken = true;
       const response = await apiClient.post('/auth/refreshToken', user, {
         headers: { 'Content-Type': 'application/json' },
       });
+      isRefreshToken = false;
       return response.data;
     } catch (error) {
       console.error('Refresh Token Error:', error);

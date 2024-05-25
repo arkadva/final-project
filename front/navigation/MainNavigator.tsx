@@ -7,6 +7,8 @@ import Register from '../components/Register';
 import PostFeed from '../components/PostFeed';
 import CreatePost from '../components/CreatePost';
 import PostDetail from '../components/PostDetail';
+import MyPosts from '../components/MyPosts';
+import EditPost from '../components/EditPost';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -20,6 +22,7 @@ const MainNavigator = () => {
         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="CreatePost" component={CreatePost} />
         <Stack.Screen name="PostDetail" component={PostDetail} />
+        <Stack.Screen name="EditPost" component={EditPost} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -29,6 +32,9 @@ const MainNavigator = () => {
       <Tab.Navigator>
         <Tab.Screen name="Feed">
           {props => <PostFeed {...props} />}
+        </Tab.Screen>
+        <Tab.Screen name="My Posts">
+          {props => <MyPosts {...props} />}
         </Tab.Screen>
       </Tab.Navigator>
     );

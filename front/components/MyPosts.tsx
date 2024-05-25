@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList, Text, Button, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiController as api } from '../api/api_controller';
@@ -6,7 +6,7 @@ import { Post } from '../models/Post';
 import { useFocusEffect } from '@react-navigation/native';
 import PostItem from '../components/PostItem';
 
-const PostFeed = ({ navigation }: { navigation: any }) => {
+const MyPosts = ({ navigation }: { navigation: any }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,34 +20,43 @@ const PostFeed = ({ navigation }: { navigation: any }) => {
         throw new Error('User ID not found');
       }
     } catch (error) {
+      console.error('Failed to fetch user ID:', error);
       Alert.alert('Error', 'Failed to fetch user ID. Please try again.');
     }
   };
 
   const fetchPosts = async () => {
+    setLoading(true);
     try {
-      const posts = await api.getPosts();
-      setPosts(posts);
+      if (userId) {
+        const userPosts = await api.getPostsByUserId(userId);
+        setPosts(userPosts);
+      }
     } catch (error) {
+      console.error('Failed to fetch posts:', error);
       Alert.alert('Error', 'Failed to fetch posts. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchPosts();
+    }
+  }, [userId]);
+
   useFocusEffect(
     useCallback(() => {
-      const loadData = async () => {
-        setLoading(true);
-        await fetchUserId();
-        await fetchPosts();
-        setLoading(false);
-      };
-      loadData();
-    }, [])
+      if (userId) {
+        fetchPosts();
+      }
+    }, [userId])
   );
-
-  const handleDeletePost = (deletedPostId: string) => {
-    setPosts((prevPosts) => prevPosts.filter(post => post._id !== deletedPostId));
-  };
 
   if (loading) {
     return (
@@ -68,8 +77,7 @@ const PostFeed = ({ navigation }: { navigation: any }) => {
             post={item}
             userId={userId}
             onPress={() => navigation.navigate('PostDetail', { post: item, loggedInUserId: userId })}
-            onEditPress={() => navigation.navigate('EditPost', { post: item })}
-            onDeletePress={() => handleDeletePost(item._id)}
+            onEditPress={() => navigation.navigate('EditPost', { post: item, onGoBack: fetchPosts })}
           />
         )}
       />
@@ -89,4 +97,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostFeed;
+export default MyPosts;
