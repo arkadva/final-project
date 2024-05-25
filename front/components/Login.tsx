@@ -38,6 +38,16 @@ const Login = ({ navigation }: { navigation: any }) => {
     discovery
   );
 
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await AsyncStorage.getItem('jwtToken');
+      if (token) {
+        navigation.navigate('Main');
+      }
+    };
+
+    checkToken();
+  }, [navigation]);
 
   useEffect(() => {
     if (response?.type === 'success') {
@@ -51,8 +61,10 @@ const Login = ({ navigation }: { navigation: any }) => {
       setLoading(true);
       const data = await api.login(email, password);
       const decoded: DecodedToken = jwtDecode<DecodedToken>(data.token);
+      console.log(data);
 
       await AsyncStorage.setItem('jwtToken', data.token);
+      await AsyncStorage.setItem('refreshToken', data.refreshToken);
       await AsyncStorage.setItem('userId', decoded.userId);
 
       navigation.navigate('Main');

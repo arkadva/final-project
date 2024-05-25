@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, Image, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, Image, Alert, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { apiController as api } from '../api/api_controller';
 import { Post } from '../models/Post';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -82,9 +82,17 @@ const CreatePost = ({ navigation, route }: { navigation: any, route: any }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Create Post</Text>
-      <TextInput placeholder="Enter text" value={text} onChangeText={setText} style={styles.textInput} />
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.header}>Create Post</Text>
+      <TextInput
+        placeholder="Enter text"
+        value={text}
+        onChangeText={setText}
+        style={styles.textInput}
+        multiline
+        numberOfLines={4}
+        textAlignVertical="top"
+      />
       <Button title="Pick Image" onPress={pickImage} />
       {image && <Image source={{ uri: image }} style={styles.image} />}
       {loading ? (
@@ -92,16 +100,21 @@ const CreatePost = ({ navigation, route }: { navigation: any, route: any }) => {
       ) : (
         <Button title="Save" onPress={handleSave} />
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
   textInput: {
     width: '100%',
@@ -109,6 +122,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     marginBottom: 16,
+    borderRadius: 4,
   },
   image: {
     width: 100,

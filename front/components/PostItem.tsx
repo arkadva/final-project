@@ -4,6 +4,8 @@ import { Post } from '../models/Post';
 import { formatImagePath } from '../utils/FormatImagePath';
 import { apiController as api } from '../api/api_controller';
 import { User } from '../models/User';
+import SyntaxHighlighter from 'react-native-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface PostItemProps {
   post: Post;
@@ -41,11 +43,60 @@ const PostItem: React.FC<PostItemProps> = ({ post, userId, onPress, onEditPress,
     }
   };
 
+  const extractSegments = (text: string) => {
+    const regex = /(```\w*\n[\s\S]*?\n```)/g;
+    const segments = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({
+          type: 'text',
+          content: text.slice(lastIndex, match.index),
+        });
+      }
+      segments.push({
+        type: 'code',
+        content: match[0],
+      });
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      segments.push({
+        type: 'text',
+        content: text.slice(lastIndex),
+      });
+    }
+
+    return segments;
+  };
+
+  const renderSegment = (segment: { type: string; content: string }) => {
+    if (segment.type === 'code') {
+      const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/;
+      const match = codeBlockRegex.exec(segment.content);
+      if (match) {
+        const language = match[1];
+        const code = match[2];
+        return (
+          <SyntaxHighlighter key={segment.content} language={language} style={docco}>
+            {code}
+          </SyntaxHighlighter>
+        );
+      }
+    } else {
+      return <Text key={segment.content}>{segment.content}</Text>;
+    }
+  };
+
   const ownerProfilePictureUri = owner?.profileImg ? formatImagePath(owner.profileImg) : null;
+  const segments = extractSegments(post.text);
   const postContent = (
     <View>
       <Image source={{ uri: formatImagePath(post.img) }} style={styles.postImage} />
-      <Text>{post.text}</Text>
+      {segments.map(renderSegment)}
       <Text>Created at: {post.createdAt}</Text>
       {owner && (
         <View style={styles.ownerInfo}>

@@ -32,7 +32,6 @@ const Register = ({ navigation }: { navigation: any }) => {
 
     try {
       const response = await api.register(formData);
-      //console.log('Server Response:', response);
       Alert.alert('Success', 'Registration successful. Please log in.');
       navigation.navigate('Login');
     } catch (error) {

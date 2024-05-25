@@ -5,10 +5,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from '../components/Login';
 import Register from '../components/Register';
 import PostFeed from '../components/PostFeed';
+import MyPosts from '../components/MyPosts';
+import Profile from '../components/Profile';
+import EditPost from '../components/EditPost';
+import EditProfile from '../components/EditProfile';
 import CreatePost from '../components/CreatePost';
 import PostDetail from '../components/PostDetail';
-import MyPosts from '../components/MyPosts';
-import EditPost from '../components/EditPost';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -20,9 +22,10 @@ const MainNavigator = () => {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="EditPost" component={EditPost} />
+        <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="CreatePost" component={CreatePost} />
         <Stack.Screen name="PostDetail" component={PostDetail} />
-        <Stack.Screen name="EditPost" component={EditPost} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -35,6 +38,9 @@ const MainNavigator = () => {
         </Tab.Screen>
         <Tab.Screen name="My Posts">
           {props => <MyPosts {...props} />}
+        </Tab.Screen>
+        <Tab.Screen name="Profile">
+          {props => <Profile {...props} />}
         </Tab.Screen>
       </Tab.Navigator>
     );
